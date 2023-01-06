@@ -20,8 +20,24 @@ async function run() {
         const movies = database.collection('movies');
 
         // Query for a movie that has the title 'Back to the Future'
-        const query = { title: 'Back to the Future' };
-        const foundMovie = await movies.findOne(query);
+        const singleMovieQuery = { title: 'Back to the Future' };
+        const multipleMovieQuery = { title: { $regex: "Back to the Future" } }
+        const foundMovie = await movies.findOne(singleMovieQuery);
+        const options = {
+            // sort returned documents in ascending order by title (A->Z)
+            sort: { title: 1 },
+            // Include only the `title` and `imdb` fields in each returned document
+            projection: { _id: 0, title: 1 },
+        };
+        const cursor = movies.find(multipleMovieQuery, options);
+
+        // print a message if no documents were found
+        if ((await cursor.count()) === 0) {
+            console.log("No documents found!");
+        } else {
+            // replace console.dir with your callback to access individual elements
+            await cursor.forEach(console.dir);
+        }
 
         console.log(foundMovie);
     } finally {
